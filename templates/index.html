@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .upload-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 24px;
+            font-size: 24px;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 40px 20px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #4299e1;
+            background: #f7fafc;
+        }
+
+        .upload-area p {
+            color: #718096;
+            margin-top: 12px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #4299e1;
+            margin-bottom: 12px;
+        }
+
+        .run-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .run-button:hover {
+            background: #3182ce;
+        }
+
+        .run-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .file-name {
+            margin-top: 12px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h1>Upload File</h1>
+        <label for="fileUpload" class="upload-area">
+            <div class="upload-icon">📁</div>
+            <p>Click to upload or drag and drop</p>
+            <p style="font-size: 14px; margin-top: 8px;">Supports CSV files only</p>
+            <input type="file" id="fileUpload" class="file-input">
+            <div id="fileName" class="file-name"></div>
+        </label>
+        <input type="checkbox" id="amazon_check">Amazon
+        <input type="checkbox" id="flipkart_check">Flipkart
+        <button id="runButton" class="run-button" disabled>Run Analysis</button>
+    </div>
+
+    <script>
+        const fileUpload = document.getElementById('fileUpload');
+        const fileName = document.getElementById('fileName');
+        const runButton = document.getElementById('runButton');
+
+        fileUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileName.textContent = `Selected file: ${file.name}`;
+                runButton.disabled = false;
+            } else {
+                fileName.textContent = '';
+                runButton.disabled = true;
+            }
+        });
+
+        runButton.addEventListener('click', () => {
+            // Get checkbox states
+            const amazonChecked = amazon_check.checked ? 'true' : 'false';
+            const flipkartChecked = flipkart_check.checked ? 'true' : 'false';
+
+            // Construct the URL with query parameters
+            const url = `/run?amazon=${amazonChecked}&flipkart=${flipkartChecked}`;
+
+            // Redirect to the /run page with the query parameters
+            window.location.href = url;
+
+            // Optionally, show an alert (though the page will redirect immediately)
+            alert('Starting analysis...');
+        });
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            uploadArea.style.borderColor = '#4299e1';
+            uploadArea.style.background = '#f7fafc';
+        }
+
+        function unhighlight(e) {
+            uploadArea.style.borderColor = '#cbd5e0';
+            uploadArea.style.background = 'white';
+        }
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            
+            if (file && file.name.endsWith('.csv')) {
+                fileUpload.files = dt.files;
+                fileName.textContent = `Selected file: ${file.name}`;
+                runButton.disabled = false;
+            } else {
+                alert('Please upload a CSV file');
+            }
+        }
+    </script>
+</body>
+</html>
